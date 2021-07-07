@@ -1,0 +1,369 @@
+@{
+    ViewBag.Title = "py_zyk_term";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style type="text/css">
+    .datagrid-btable
+    {
+        border-collapse: collapse;
+    }
+    .datagrid-btable td
+    {
+        border: #e8f1f5 solid;
+        border-width: 0 0px 1px 0;
+    }
+</style>
+<script type="text/javascript">
+    var row_bjid = "";
+    var row_color = "#fff";
+    var js = "";
+    $(function () {
+
+        $.ajax({
+            url: "py_zyk_term_drop",
+            type: "get",
+            dataType: "json",
+            cache: false,
+            success: function (json) {
+
+                $('#searchterm').combobox({
+                    data: json.term,
+                    editable: false,
+                    valueField: 'termcode',
+                    textField: 'termname'
+                });
+                $('#termcode').combobox({
+                    data: json.term,
+                    editable: false,
+                    valueField: 'termcode',
+                    textField: 'termname'
+                });
+                $('#searchterm').combobox("setValue", json.pkxq);
+                $('#termcode').combobox("setValue", json.pkxq);
+                $('#hfpkr').val(json.pkr);
+                js = json.js;
+                loadcookie();
+                GetList();
+            }
+        });
+    })
+
+    function loadcookie() {
+        var termcode = $.cookie('termcode');
+        if (termcode) {
+            $('#searchterm').combobox('setValue', termcode);
+        }
+        var kcbh = $.cookie('kcbh');
+        if (kcbh) {
+            $('#txtkcbh').textbox('setValue', kcbh);
+        }
+        var syxs = $.cookie('syxs');
+        if (syxs) {
+            $('#searchsyxs').combobox('setValue', syxs);
+        }
+        var zydm = $.cookie('zydm');
+        if (zydm) {
+            $('#searchzydm').combobox('setValue', zydm);
+        }
+        var sfjzpk = $.cookie('sfjzpk');
+        if (sfjzpk) {
+            $("input:radio[name='sfjzpk'][value='" + sfjzpk + "']").attr("checked", 'checked');
+        }
+        var sfggk = $.cookie('sfggk');
+        if (sfggk) {
+            $("input:radio[name='sfggk'][value='" + sfggk + "']").attr("checked", 'checked');
+        }
+        var sfpk = $.cookie('sfpk');
+        if (sfpk) {
+            $('#sfpk').combobox('setValue', sfpk);
+        }
+    }
+
+    function getparam() {
+        var paramobj = {};
+        var yxsh = $('#searchyx').combobox('getValues');
+        paramobj.yxsh = yxsh.join(',');
+        var zydm = $('#searchzydm').combobox('getValues');
+        paramobj.zydm = zydm.join(',');
+        paramobj.termcode = $('#searchterm').combobox('getValue');
+        paramobj.syxs = $('#searchsyxs').combobox('getValue');
+        paramobj.kcbh = $("#txtkcbh").val();
+        paramobj.sfjzpk = $("input:radio[name='sfjzpk']:checked").val();
+        paramobj.sfggk = $("input:radio[name='sfggk']:checked").val();
+        paramobj.sfpk = $('#sfpk').combobox('getValue');
+        $.cookie('termcode', paramobj.termcode);
+        $.cookie('kcbh', paramobj.kcbh);
+        $.cookie('syxs', paramobj.syxs);
+        $.cookie('sfjzpk', paramobj.sfjzpk);
+        $.cookie('sfggk', paramobj.sfggk);
+        $.cookie('sfpk', paramobj.sfpk);
+        return paramobj;
+    }
+
+    function GetList() {
+        var paramobj = getparam();
+        var num = 1;
+        var pageNumber = $.cookie('pageNumber');
+        if (pageNumber) {
+            num = parseInt(pageNumber);
+        }
+        $('#dg').datagrid({
+            width: 'auto',
+            height: 'auto',
+            scrollbarSize: 0,
+            url: 'py_zyk_term_list',
+            queryParams: paramobj,
+            loadMsg: '正在加载....',
+            columns: [[
+                { field: 'ck', title: '', width: 40, checkbox: true },
+                { field: 'bjid', hidden: true },
+                { field: 'nd', title: '年级', width: 60, sortable: true },
+                { field: 'kcbh', title: '课程编号', width: 60, sortable: true  },
+                { field: 'kcmc', title: '课程名称', width: 100, sortable: true  },
+                { field: 'xsmc', title: '开课院系', width: 80, sortable: true },
+                { field: 'zryx', title: '责任学院', width: 80, sortable: true },
+                { field: 'rkjsxm', title: '授课教师', width: 80, sortable: true  },
+                { field: 'sszy', title: '方案专业', width: 100, sortable: true  },
+                { field: 'kclbmc', title: '课程类型', width: 100, sortable: true  },
+                { field: 'xwkmc', title: '选课类型', width: 100, sortable: true  },
+                { field: 'bjmc', title: '班级名称', width: 100, sortable: true  },
+                { field: 'kcxs', title: '学时', width: 30, align: 'center', sortable: true  },
+                { field: 'kcxf', title: '学分', width: 30, align: 'center', sortable: true },
+                { field: 'xkrs', title: '选课人数', width: 40, align: 'center', sortable: true  },
+                { field: 'sfpk', title: '是否排课', width: 40, align: 'center', sortable: true },
+                { field: 'detail', title: '明细', width: 60, align: 'center', sortable: true,
+                    formatter: function (value, row, index) {
+                        var e = '<a class="l-btn l-btn-small l-btn-plain" href="py_pkdetail?bjid=' + row.bjid + '&&kcbh=' + row.kcbh + '&&termcode=' + paramobj.termcode + '"><span class="l-btn-left l-btn-icon-left"><span class="l-btn-text">明细</span><span class="l-btn-icon icon-edit">&nbsp;</span></span></a> ';
+                        return e;
+                    }
+                }
+            ]],
+            pageSize: 10,
+            pageList: [10, 20, 30, 50, 100],
+            pagination: true, //分页控件 
+            pageNumber: num,
+            nowrap: false,
+            fitColumns: true,
+            striped: false,
+            rownumbers: false, //行号
+            singleSelect: false, //是否单选 
+            onLoadSuccess: function (data) {
+                var cellcomp = 'bjid';
+                var cells = ['kcbh', 'kcmc', 'bjmc', 'kcxf', 'xkrs', 'action'];
+                mergeCells_one('dg', data, cellcomp, cells);
+                var options = $("#dg").datagrid("getPager").data("pagination").options;
+                var curr = options.pageNumber;
+                $.cookie('pageNumber', curr);
+            },
+            rowStyler: function (i, row) {
+                if (row.bjid == row_bjid) {
+                    return 'background-color:' + row_color + ';color:#000';
+                }
+                else {
+                    if (row_color == "#fafafa") {
+                        row_color = "#fff";
+                    }
+                    else {
+                        row_color = "#fafafa";
+                    }
+                    row_bjid = row.bjid;
+                    return 'background-color:' + row_color + ';color:#000';
+                }
+            }
+        });
+        //设置分页控件 
+        dgpageInit('dg');
+    }
+
+    function research() {
+        reload();
+    }
+
+    function reload() {
+        var paramobj = getparam();
+        $("#dg").datagrid('reload', paramobj);
+    }
+
+
+
+    function getRowIndex(target) {
+        var tr = $(target).closest('tr.datagrid-row');
+        return parseInt(tr.attr('datagrid-row-index'));
+    }
+
+    function tool_export() {
+        var paramobj = getparam();
+        paramobj.sfggk = $("input:radio[name='sfggk']:checked").val();
+        var form = $("<form action='py_zyk_termdc'></form");
+        $.each(paramobj, function (key, value) {
+            var input = $("<input type='hidden' name='" + key + "' value='" + value + "'/>");
+            form.append(input);
+        });
+        $(document.body).append(form);
+        form.submit();
+    }
+
+
+    function tool_excel() {
+        var paramobj = getparam();
+        paramobj.sfggk = "0";
+        var form = $("<form action='py_zyk_termdchz'></form");
+        $.each(paramobj, function (key, value) {
+            var input = $("<input type='hidden' name='" + key + "' value='" + value + "'/>");
+            form.append(input);
+        });
+        $(document.body).append(form);
+        form.submit();
+    }
+
+
+    function term_dy() {
+        var rows = $("#dg").datagrid('getChecked');
+        if (rows.length == 0) {
+            $.messager.alert("提示", "请选择要调开课学期的课程！", "error");
+            return;
+        }
+        var msg = "";
+        var kcbhs = [];
+        $.each(rows, function (index, row) {
+            kcbhs.push(row.kcbh);
+            if (row.bjid != undefined && row.bjid != null && row.bjid != "") {
+                msg += row.kcmc + ",该课程已排课,不能调整开课学期<br/>";
+            }
+        });
+        if (msg != "") {
+            $.messager.alert("提示", msg, "error");
+            return;
+        }
+        var kcbh = kcbhs.join(",");
+        var ytermcode = $('#searchterm').combobox('getValue');    //原学期
+        var termcode = $('#termcode').combobox('getValue');
+        $.ajax({
+            url: "py_zyk_changekkxq",
+            type: "get",
+            dataType: "json",
+            data: { 'kcbh': kcbh, 'ytermcode': ytermcode, 'termcode': termcode },
+            cache: false,
+            success: function (json) {
+                if (json.jg == "1") {
+                    $.messager.alert('提示', json.msg, "info");
+                    reload();
+                }
+                else {
+                    $.messager.alert('提示', json.msg, "error");
+                    reload();
+                }
+            }
+        });
+    }
+
+    function term_plan() {
+        var rows = $("#dg").datagrid('getChecked');
+        if (rows.length == 0) {
+            $.messager.alert("提示", "请选择要添加到二轮计划课程库、学生库的记录！", "error");
+            return;
+        }
+        var msg = "";
+        var kcbhs = [];
+        $.each(rows, function (index, row) {
+            kcbhs.push(row.kcbh);
+            if (row.bjid != undefined && row.bjid != null && row.bjid != "") {
+                msg += row.kcmc + ",该课程已排课,不能参与二轮修改计划<br/>";
+            }
+        });
+        if (msg != "") {
+            $.messager.alert("提示", msg, "error");
+            return;
+        }
+        var kcbh = kcbhs.join(",");
+        var termcode = $('#searchterm').combobox('getValue');    //原学期
+   
+        $.ajax({
+            url: "py_zyk_planchange",
+            type: "get",
+            dataType: "json",
+            data: { 'kcbh': kcbh, 'termcode': termcode },
+            cache: false,
+            success: function (json) {
+                if (json.jg == "1") {
+                    $.messager.alert('提示', json.msg, "info");
+                    reload();
+                }
+                else {
+                    $.messager.alert('提示', json.msg, "error");
+                    reload();
+                }
+            }
+        });
+    }
+</script>
+<div id="searchdiv" class="tools-row">
+    <form id="searchform" name="searchform">
+    <table>
+        <tr>
+            <td>
+                学期：<select id="searchterm" name="searchterm" style="width: 150px;">
+                </select>
+                @{Html.RenderAction("SearchYxZy", "Shared");}
+                课程编号/名称：<input id="txtkcbh" type="text" class="easyui-textbox" style="width: 150px;" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                适用学生：
+                <select id="searchsyxs" name="searchsyxs" class="easyui-combobox" style="width: 90px;"
+                    data-options="editable: false,panelHeight: 'auto'">
+                    <option value="" selected="selected">全部</option>
+                    <option value="1">全日制</option>
+                    <option value="0">非全日制</option>
+                </select>
+                是否排课：
+                <select id="sfpk" class="easyui-combobox" style="width: 100px;" data-options="editable: false,panelHeight: 'auto'">
+                    <option value="">全部</option>
+                    <option value="1">已排课</option>
+                    <option value="0">未排课</option>
+                </select>
+                <input id="rdosfggk1" type="radio" name="sfggk" value="1" onclick="reload()" style="vertical-align: middle;" />
+                <label for="rdosfggk1" style="vertical-align: middle;">
+                    公共课</label>
+                <input id="rdosfggk2" type="radio" name="sfggk" value="0" onclick="reload()" checked="checked"
+                    style="vertical-align: middle;" />
+                <label for="rdosfggk2" style="vertical-align: middle;">
+                    专业课</label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <input id="rdopkfs1" type="radio" name="sfjzpk" checked="checked" value="0" onclick="reload()"
+                    style="vertical-align: middle;" />
+                <label for="rdopkfs1" style="vertical-align: middle;">
+                    一般排课</label>
+                <input id="rdopkfs2" type="radio" name="sfjzpk" value="1" onclick="reload()" style="vertical-align: middle;" />
+                <label for="rdopkfs2" style="vertical-align: middle;">
+                    集中排课</label>
+                <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search'"
+                    onclick="research()">查询</a>
+            </td>
+        </tr>
+    </table>
+    </form>
+</div>
+<div class="tools-row">
+    <table cellpadding="0" cellspacing="0" style="width: 100%">
+        <tr>
+            <td align="left">
+                将勾选课程调至下列学期：
+                <select id="termcode" name="termcode" style="width: 200px;">
+                </select>
+                <button id="btndy" class="but-primary" onclick="term_dy()">
+                    确定</button>
+            </td>
+            <td align="right">
+                <input id="hfpkr" type="hidden" />
+                <button id="btndcsj" type="button" class="but-primary" onclick="tool_export()">
+                    <span class="icon"></span>导出数据</button>
+                <button id="btnplan" class="but-primary" onclick="term_plan()">
+                    添加到二轮计划课程库、学生库</button>
+            </td>
+        </tr>
+    </table>
+</div>
+<table id="dg">
+</table>
